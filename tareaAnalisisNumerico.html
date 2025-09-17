@@ -1,0 +1,657 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Calculadora de Modelos Exponenciales</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            background: rgba(255, 255, 255, 0.95);
+            border-radius: 20px;
+            box-shadow: 0 25px 50px rgba(0, 0, 0, 0.2);
+            overflow: hidden;
+            backdrop-filter: blur(10px);
+        }
+
+        .header {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            padding: 30px;
+            text-align: center;
+            color: white;
+        }
+
+        .header h1 {
+            font-size: 2.5em;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.3);
+        }
+
+        .header p {
+            font-size: 1.1em;
+            opacity: 0.9;
+        }
+
+        .tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-bottom: 2px solid #e9ecef;
+        }
+
+        .tab-button {
+            flex: 1;
+            padding: 20px;
+            background: #f8f9fa;
+            border: none;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: 600;
+            transition: all 0.3s ease;
+            color: #6c757d;
+            position: relative;
+        }
+
+        .tab-button:hover {
+            background: #e9ecef;
+            color: #495057;
+        }
+
+        .tab-button.active {
+            background: white;
+            color: #4facfe;
+            border-bottom: 3px solid #4facfe;
+        }
+
+        .tab-button::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            right: 0;
+            height: 3px;
+            background: linear-gradient(90deg, #4facfe, #00f2fe);
+            transform: scaleX(0);
+            transition: transform 0.3s ease;
+        }
+
+        .tab-button.active::before {
+            transform: scaleX(1);
+        }
+
+        .tab-content {
+            padding: 40px;
+            display: none;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .problem-section {
+            background: linear-gradient(135deg, #f8f9fa 0%, #e9ecef 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-bottom: 30px;
+            border-left: 5px solid #4facfe;
+        }
+
+        .formula-box {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 25px;
+            border-radius: 12px;
+            margin: 20px 0;
+            text-align: center;
+            font-size: 1.3em;
+            box-shadow: 0 10px 25px rgba(102, 126, 234, 0.3);
+        }
+
+        .input-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+            gap: 20px;
+            margin: 25px 0;
+        }
+
+        .input-group {
+            background: white;
+            padding: 25px;
+            border-radius: 12px;
+            box-shadow: 0 5px 15px rgba(0, 0, 0, 0.1);
+            border: 2px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .input-group:hover {
+            border-color: #4facfe;
+            transform: translateY(-2px);
+        }
+
+        .input-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .input-group input {
+            width: 100%;
+            padding: 12px 15px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 1em;
+            transition: border-color 0.3s ease;
+        }
+
+        .input-group input:focus {
+            outline: none;
+            border-color: #4facfe;
+            box-shadow: 0 0 0 3px rgba(79, 172, 254, 0.1);
+        }
+
+        .input-group small {
+            color: #6c757d;
+            font-size: 0.9em;
+            margin-top: 5px;
+            display: block;
+        }
+
+        .button-group {
+            display: flex;
+            gap: 15px;
+            justify-content: center;
+            margin: 30px 0;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 15px 30px;
+            border: none;
+            border-radius: 50px;
+            font-size: 1.1em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            min-width: 150px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(79, 172, 254, 0.3);
+        }
+
+        .btn-primary:hover {
+            transform: translateY(-3px);
+            box-shadow: 0 15px 35px rgba(79, 172, 254, 0.4);
+        }
+
+        .btn-success {
+            background: linear-gradient(135deg, #56ab2f 0%, #a8e6cf 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(86, 171, 47, 0.3);
+        }
+
+        .btn-danger {
+            background: linear-gradient(135deg, #ff416c 0%, #ff4b2b 100%);
+            color: white;
+            box-shadow: 0 10px 25px rgba(255, 65, 108, 0.3);
+        }
+
+        .results {
+            background: linear-gradient(135deg, #f8f9fa 0%, #ffffff 100%);
+            border-radius: 15px;
+            padding: 30px;
+            margin-top: 30px;
+            border: 2px solid #e9ecef;
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.05);
+        }
+
+        .result-item {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 15px 0;
+            border-bottom: 1px solid #e9ecef;
+            transition: all 0.3s ease;
+        }
+
+        .result-item:last-child {
+            border-bottom: none;
+        }
+
+        .result-item:hover {
+            background: rgba(79, 172, 254, 0.05);
+            border-radius: 8px;
+            padding: 15px 10px;
+        }
+
+        .result-label {
+            font-weight: 600;
+            color: #495057;
+            font-size: 1.1em;
+        }
+
+        .result-value {
+            font-size: 1.3em;
+            font-weight: 700;
+            color: #4facfe;
+            text-shadow: 1px 1px 2px rgba(0, 0, 0, 0.1);
+        }
+
+        .error-propagation {
+            background: linear-gradient(135deg, #ffeaa7 0%, #fdcb6e 100%);
+            border-radius: 12px;
+            padding: 20px;
+            margin: 20px 0;
+            border-left: 5px solid #f39c12;
+        }
+
+        .error-propagation h4 {
+            color: #d35400;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+        }
+
+        .steps {
+            background: linear-gradient(135deg, #dfe6e9 0%, #c1d5d9 100%);
+            border-radius: 12px;
+            padding: 25px;
+            margin: 20px 0;
+        }
+
+        .steps h4 {
+            color: #2c3e50;
+            margin-bottom: 15px;
+            font-size: 1.3em;
+        }
+
+        .step {
+            margin: 10px 0;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.7);
+            border-radius: 6px;
+            border-left: 3px solid #3498db;
+        }
+
+        .math-expression {
+            font-family: 'Courier New', monospace;
+            background: rgba(52, 152, 219, 0.1);
+            padding: 10px;
+            border-radius: 6px;
+            margin: 10px 0;
+        }
+
+        @media (max-width: 768px) {
+            .tabs {
+                flex-direction: column;
+            }
+            
+            .input-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .button-group {
+                flex-direction: column;
+                align-items: center;
+            }
+            
+            .btn {
+                width: 100%;
+                max-width: 300px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🧮 Calculadora de Modelos Exponenciales</h1>
+            <p>Análisis con Propagación de Error - Datación por Carbono-14 y Ley de Enfriamiento de Newton</p>
+        </div>
+
+        <div class="tabs">
+            <button class="tab-button active" onclick="openTab(event, 'carbon-tab')">
+                🧪 Datación por Carbono-14
+            </button>
+            <button class="tab-button" onclick="openTab(event, 'newton-tab')">
+                🌡️ Ley de Enfriamiento de Newton
+            </button>
+        </div>
+
+        <!-- Pestaña Carbono-14 -->
+        <div id="carbon-tab" class="tab-content active">
+            <div class="problem-section">
+                <h3>🧪 Datación Radiactiva por Carbono-14</h3>
+                <p><strong>Contexto del Problema:</strong> Se utiliza el decaimiento radiactivo del carbono-14 para estimar la edad de material orgánico. Una muestra tomada de las antiguas estructuras de Tiwanaku en Bolivia muestra que el 77.45% del carbono-14 inicial está presente.</p>
+                
+                <div class="formula-box">
+                    f(t) = f(0)e<sup>kt</sup>
+                    <br><br>
+                    <strong>Función de decaimiento exponencial</strong>
+                    <br>
+                    Donde: t = tiempo, f(0) = cantidad inicial, f(t) = cantidad en tiempo t, k = constante de decaimiento
+                </div>
+
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>📅 Vida Media del C-14</label>
+                        <input type="number" id="halfLife" value="5730" step="0.1">
+                        <small>Años (valor conocido)</small>
+                    </div>
+                    <div class="input-group">
+                        <label>📊 Porcentaje Presente</label>
+                        <input type="number" id="percentage" value="77.45" step="0.01">
+                        <small>% del C-14 inicial (f(t)/f(0) × 100)</small>
+                    </div>
+                    <div class="input-group">
+                        <label>⚠️ Error en el Porcentaje</label>
+                        <input type="number" id="percentageError" value="0.5" step="0.01">
+                        <small>±% (incertidumbre en la medición)</small>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="calculateCarbonAge()">🔬 Calcular Edad del Artefacto</button>
+                    <button class="btn btn-success" onclick="loadCarbonExample()">📋 Cargar Ejemplo</button>
+                    <button class="btn btn-danger" onclick="clearCarbonResults()">🧹 Limpiar</button>
+                </div>
+
+                <div id="carbonResults" class="results" style="display: none;">
+                    <h4>📊 Resultados del Análisis</h4>
+                    <div class="result-item">
+                        <span class="result-label">Constante de decaimiento (k):</span>
+                        <span class="result-value" id="constantK">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Edad estimada:</span>
+                        <span class="result-value" id="estimatedAge">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Incertidumbre (±):</span>
+                        <span class="result-value" id="ageUncertainty">-</span>
+                    </div>
+                </div>
+
+                <div id="carbonSteps" class="steps" style="display: none;">
+                    <h4>📝 Pasos del Cálculo</h4>
+                    <div class="step">
+                        <strong>Paso 1:</strong> Calcular la constante de decaimiento
+                        <div class="math-expression" id="step1">k = -ln(2) / vida_media</div>
+                    </div>
+                    <div class="step">
+                        <strong>Paso 2:</strong> Aplicar la ecuación exponencial
+                        <div class="math-expression" id="step2">f(t)/f(0) = e^(kt)</div>
+                    </div>
+                    <div class="step">
+                        <strong>Paso 3:</strong> Resolver para t
+                        <div class="math-expression" id="step3">t = ln(f(t)/f(0)) / k</div>
+                    </div>
+                </div>
+
+                <div id="carbonError" class="error-propagation" style="display: none;">
+                    <h4>⚠️ Propagación del Error</h4>
+                    <div id="errorDetails"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Pestaña Newton -->
+        <div id="newton-tab" class="tab-content">
+            <div class="problem-section">
+                <h3>🌡️ Ley de Enfriamiento de Newton</h3>
+                <p><strong>Contexto del Problema:</strong> Un oficial de policía llega a una escena del crimen en un hotel a las 9:18 PM, donde encuentra un cuerpo. Inmediatamente mide la temperatura del cuerpo y la encuentra en 79.5°F. Exactamente una hora después mide la temperatura nuevamente, y la encuentra en 78.0°F.</p>
+                
+                <div class="formula-box">
+                    T(t) = T<sub>s</sub> + (T<sub>0</sub> - T<sub>s</sub>)e<sup>-kt</sup>
+                    <br><br>
+                    <strong>Ley de Enfriamiento de Newton</strong>
+                    <br>
+                    Donde: T(t) = temperatura en tiempo t, T<sub>s</sub> = temperatura ambiente, T<sub>0</sub> = temperatura inicial, k = constante
+                </div>
+
+                <div class="input-grid">
+                    <div class="input-group">
+                        <label>🌡️ Temperatura Corporal Normal</label>
+                        <input type="number" id="bodyTemp" value="98.6" step="0.1">
+                        <small>°F (temperatura antes de la muerte)</small>
+                    </div>
+                    <div class="input-group">
+                        <label>🏠 Temperatura del Cuarto</label>
+                        <input type="number" id="roomTemp" value="69" step="0.1">
+                        <small>°F (temperatura ambiente constante)</small>
+                    </div>
+                    <div class="input-group">
+                        <label>🕘 Temperatura a las 9:18 PM</label>
+                        <input type="number" id="temp1" value="79.5" step="0.1">
+                        <small>°F (primera medición)</small>
+                    </div>
+                    <div class="input-group">
+                        <label>🕙 Temperatura a las 10:18 PM</label>
+                        <input type="number" id="temp2" value="78.0" step="0.1">
+                        <small>°F (segunda medición, 1 hora después)</small>
+                    </div>
+                    <div class="input-group">
+                        <label>⚠️ Error en Temperatura</label>
+                        <input type="number" id="tempError" value="0.1" step="0.01">
+                        <small>±°F (incertidumbre del termómetro)</small>
+                    </div>
+                </div>
+
+                <div class="button-group">
+                    <button class="btn btn-primary" onclick="calculateDeathTime()">⏰ Determinar Hora de la Muerte</button>
+                    <button class="btn btn-success" onclick="loadNewtonExample()">📋 Cargar Ejemplo</button>
+                    <button class="btn btn-danger" onclick="clearNewtonResults()">🧹 Limpiar</button>
+                </div>
+
+                <div id="newtonResults" class="results" style="display: none;">
+                    <h4>📊 Resultados del Análisis</h4>
+                    <div class="result-item">
+                        <span class="result-label">Constante de enfriamiento (k):</span>
+                        <span class="result-value" id="coolingConstant">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Tiempo transcurrido desde la muerte:</span>
+                        <span class="result-value" id="timeSinceDeath">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Hora estimada de la muerte:</span>
+                        <span class="result-value" id="deathTime">-</span>
+                    </div>
+                    <div class="result-item">
+                        <span class="result-label">Incertidumbre (±):</span>
+                        <span class="result-value" id="timeUncertainty">-</span>
+                    </div>
+                </div>
+
+                <div id="newtonSteps" class="steps" style="display: none;">
+                    <h4>📝 Pasos del Cálculo</h4>
+                    <div class="step">
+                        <strong>Paso 1:</strong> Encontrar la constante k usando las dos mediciones
+                        <div class="math-expression" id="newtonStep1">k = ln((T₁ - Ts)/(T₂ - Ts)) / Δt</div>
+                    </div>
+                    <div class="step">
+                        <strong>Paso 2:</strong> Calcular el tiempo desde la muerte hasta la primera medición
+                        <div class="math-expression" id="newtonStep2">t = ln((T₀ - Ts)/(T₁ - Ts)) / k</div>
+                    </div>
+                    <div class="step">
+                        <strong>Paso 3:</strong> Determinar la hora de la muerte
+                        <div class="math-expression" id="newtonStep3">Hora de muerte = 9:18 PM - tiempo calculado</div>
+                    </div>
+                </div>
+
+                <div id="newtonError" class="error-propagation" style="display: none;">
+                    <h4>⚠️ Propagación del Error</h4>
+                    <div id="newtonErrorDetails"></div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        function openTab(evt, tabName) {
+            var i, tabcontent, tablinks;
+            tabcontent = document.getElementsByClassName("tab-content");
+            for (i = 0; i < tabcontent.length; i++) {
+                tabcontent[i].classList.remove("active");
+            }
+            tablinks = document.getElementsByClassName("tab-button");
+            for (i = 0; i < tablinks.length; i++) {
+                tablinks[i].classList.remove("active");
+            }
+            document.getElementById(tabName).classList.add("active");
+            evt.currentTarget.classList.add("active");
+        }
+
+        function calculateCarbonAge() {
+            const halfLife = parseFloat(document.getElementById('halfLife').value);
+            const percentage = parseFloat(document.getElementById('percentage').value);
+            const percentageError = parseFloat(document.getElementById('percentageError').value);
+
+            // Calcular la constante de decaimiento
+            const k = -Math.log(2) / halfLife;
+            
+            // Calcular la edad
+            const ratio = percentage / 100;
+            const age = Math.log(ratio) / k;
+            
+            // Propagación del error
+            // δt = |dt/d(percentage)| * δ(percentage)
+            // dt/d(percentage) = 1/(k * percentage)
+            const ageUncertainty = Math.abs(1 / (k * percentage)) * percentageError;
+
+            // Mostrar resultados
+            document.getElementById('constantK').textContent = k.toExponential(4) + ' años⁻¹';
+            document.getElementById('estimatedAge').textContent = Math.round(age) + ' años';
+            document.getElementById('ageUncertainty').textContent = '±' + Math.round(ageUncertainty) + ' años';
+            
+            // Mostrar pasos
+            document.getElementById('step1').innerHTML = `k = -ln(2) / ${halfLife} = ${k.toExponential(4)} años⁻¹`;
+            document.getElementById('step2').innerHTML = `${percentage/100} = e<sup>(k×t)</sup>`;
+            document.getElementById('step3').innerHTML = `t = ln(${percentage/100}) / (${k.toExponential(4)}) = ${Math.round(age)} años`;
+            
+            // Mostrar propagación del error
+            document.getElementById('errorDetails').innerHTML = `
+                <p><strong>Fórmula de propagación:</strong> δt = |∂t/∂P| × δP</p>
+                <p><strong>Derivada parcial:</strong> ∂t/∂P = 1/(k × P) = ${(1/(k * percentage)).toExponential(4)}</p>
+                <p><strong>Error propagado:</strong> δt = ${(1/(k * percentage)).toExponential(4)} × ${percentageError} = ±${Math.round(ageUncertainty)} años</p>
+                <p><strong>Resultado final:</strong> ${Math.round(age)} ± ${Math.round(ageUncertainty)} años</p>
+            `;
+
+            document.getElementById('carbonResults').style.display = 'block';
+            document.getElementById('carbonSteps').style.display = 'block';
+            document.getElementById('carbonError').style.display = 'block';
+        }
+
+        function calculateDeathTime() {
+            const bodyTemp = parseFloat(document.getElementById('bodyTemp').value);
+            const roomTemp = parseFloat(document.getElementById('roomTemp').value);
+            const temp1 = parseFloat(document.getElementById('temp1').value);
+            const temp2 = parseFloat(document.getElementById('temp2').value);
+            const tempError = parseFloat(document.getElementById('tempError').value);
+
+            // Calcular la constante k usando las dos mediciones (Δt = 1 hora)
+            const k = Math.log((temp1 - roomTemp) / (temp2 - roomTemp)) / 1;
+            
+            // Calcular el tiempo desde la muerte hasta la primera medición
+            const timeSinceDeath = Math.log((bodyTemp - roomTemp) / (temp1 - roomTemp)) / k;
+            
+            // Calcular la hora de muerte (9:18 PM - tiempo calculado)
+            const totalMinutes = 9 * 60 + 18; // 9:18 PM en minutos
+            const deathMinutes = totalMinutes - timeSinceDeath * 60;
+            const deathHour = Math.floor(deathMinutes / 60);
+            const deathMin = Math.round(deathMinutes % 60);
+            
+            // Propagación del error
+            // Simplified error propagation for temperature measurements
+            const timeUncertainty = Math.abs(tempError / (k * (temp1 - roomTemp))) + Math.abs(tempError / (k * (bodyTemp - roomTemp)));
+
+            // Mostrar resultados
+            document.getElementById('coolingConstant').textContent = k.toFixed(4) + ' h⁻¹';
+            document.getElementById('timeSinceDeath').textContent = timeSinceDeath.toFixed(2) + ' horas';
+            
+            let deathTimeStr;
+            if (deathHour >= 12) {
+                deathTimeStr = `${deathHour > 12 ? deathHour - 12 : deathHour}:${deathMin.toString().padStart(2, '0')} PM`;
+            } else {
+                deathTimeStr = `${deathHour}:${deathMin.toString().padStart(2, '0')} AM`;
+            }
+            
+            document.getElementById('deathTime').textContent = deathTimeStr;
+            document.getElementById('timeUncertainty').textContent = '±' + (timeUncertainty * 60).toFixed(0) + ' minutos';
+
+            // Mostrar pasos
+            document.getElementById('newtonStep1').innerHTML = `k = ln((${temp1} - ${roomTemp})/(${temp2} - ${roomTemp})) / 1 = ${k.toFixed(4)} h⁻¹`;
+            document.getElementById('newtonStep2').innerHTML = `t = ln((${bodyTemp} - ${roomTemp})/(${temp1} - ${roomTemp})) / ${k.toFixed(4)} = ${timeSinceDeath.toFixed(2)} horas`;
+            document.getElementById('newtonStep3').innerHTML = `Hora de muerte = 9:18 PM - ${timeSinceDeath.toFixed(2)} horas = ${deathTimeStr}`;
+
+            // Mostrar propagación del error
+            document.getElementById('newtonErrorDetails').innerHTML = `
+                <p><strong>Fuentes de error:</strong> Incertidumbre en mediciones de temperatura (±${tempError}°F)</p>
+                <p><strong>Propagación del error:</strong> δt ≈ δT × |∂t/∂T|</p>
+                <p><strong>Incertidumbre temporal:</strong> ±${(timeUncertainty * 60).toFixed(0)} minutos</p>
+                <p><strong>Resultado final:</strong> Muerte ocurrió a las ${deathTimeStr} ± ${(timeUncertainty * 60).toFixed(0)} minutos</p>
+            `;
+
+            document.getElementById('newtonResults').style.display = 'block';
+            document.getElementById('newtonSteps').style.display = 'block';
+            document.getElementById('newtonError').style.display = 'block';
+        }
+
+        function loadCarbonExample() {
+            document.getElementById('halfLife').value = 5730;
+            document.getElementById('percentage').value = 77.45;
+            document.getElementById('percentageError').value = 0.5;
+        }
+
+        function loadNewtonExample() {
+            document.getElementById('bodyTemp').value = 98.6;
+            document.getElementById('roomTemp').value = 69;
+            document.getElementById('temp1').value = 79.5;
+            document.getElementById('temp2').value = 78.0;
+            document.getElementById('tempError').value = 0.1;
+        }
+
+        function clearCarbonResults() {
+            document.getElementById('carbonResults').style.display = 'none';
+            document.getElementById('carbonSteps').style.display = 'none';
+            document.getElementById('carbonError').style.display = 'none';
+        }
+
+        function clearNewtonResults() {
+            document.getElementById('newtonResults').style.display = 'none';
+            document.getElementById('newtonSteps').style.display = 'none';
+            document.getElementById('newtonError').style.display = 'none';
+        }
+
+        // Cargar ejemplos por defecto al iniciar la página
+        window.onload = function() {
+            loadCarbonExample();
+            loadNewtonExample();
+        }
+    </script>
+</body>
+</html>
